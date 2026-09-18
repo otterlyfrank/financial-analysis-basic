@@ -4,3 +4,4 @@ __pycache__/
 cash.duckdb
 .DS_Store
 dist/*.app/
+settings.json

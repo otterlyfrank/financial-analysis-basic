@@ -10,7 +10,10 @@ Upload a bank-transaction Excel sheet. The app builds monthly cash in/out charts
 4. **Windows:** double-click `Run Cash P&L.bat`.
 5. The first run can take a minute while it sets up.
 6. A browser tab opens at [http://127.0.0.1:8501](http://127.0.0.1:8501).
-7. Upload your bank `.xlsx`, or `sample.xlsx` from this folder.
+7. Type **Opening cash** in the left sidebar (bank balance at the start of the first month).
+8. Upload your bank `.xlsx`, or click **Load sample.xlsx**.
+9. Use **Download Excel report** when you want the tables in a workbook.
+Closing the browser does not erase the last upload or the opening-cash figure; they are stored next to the app in `cash.duckdb` and `settings.json`.
 
 Columns must be: `Month`, `Type`, `Category`, `Subcategory`, `Amount`. Amounts are positive; direction comes from `Type`.
 
@@ -45,11 +48,12 @@ Category examples: Payroll, G&A, COGS, Occupancy costs, royalty.
 
 - Listens on `127.0.0.1:8501` only. Streamlit telemetry is off.
 - No cloud, no login, no upload except the file you pick on this machine.
-- Rows are stored in a local `cash.duckdb` next to the app (or under `~/Library/Application Support/CashPnL/` if you use the optional Mac `.app`).
+- Rows are stored in a local `cash.duckdb` next to the app. Opening cash and scenario are stored in `settings.json`. Both stay on this machine.
+- Optional Mac `.app` keeps those files under `~/Library/Application Support/CashPnL/`.
 
 ## Not in v1
 
-No Excel/PDF export, no loan schedule in the forecast, no seasonality, no multi-company roll-up, no signed Mac installer, no balance sheet.
+No PDF pack, no loan schedule in the forecast, no seasonality, no multi-company roll-up, no signed Mac installer, no balance sheet.
 
 ## From source (Terminal)
 

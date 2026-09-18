@@ -1,11 +1,22 @@
 from pathlib import Path
+import json
 
 import duckdb
 import pandas as pd
 
 from src.schema import CANONICAL
 
-DB_PATH = Path(__file__).resolve().parent.parent / "cash.duckdb"
+ROOT = Path(__file__).resolve().parent.parent
+DB_PATH = ROOT / "cash.duckdb"
+SETTINGS_PATH = ROOT / "settings.json"
+
+DEFAULT_SETTINGS = {
+    "opening_cash": 0.0,
+    "scenario": "base",
+    "pct": 10.0,
+    "include_non_recurring": False,
+    "source_name": "",
+}
 
 
 def connect() -> duckdb.DuckDBPyConnection:
@@ -28,7 +39,7 @@ def connect() -> duckdb.DuckDBPyConnection:
 
 
 def replace_facts(df: pd.DataFrame) -> None:
-    ordered = df[CANONICAL]
+    ordered = df[CANONICAL].copy()
     con = connect()
     con.execute("CREATE OR REPLACE TABLE facts AS SELECT * FROM ordered")
     con.close()
@@ -36,6 +47,34 @@ def replace_facts(df: pd.DataFrame) -> None:
 
 def read_facts() -> pd.DataFrame:
     con = connect()
-    df = con.execute("SELECT * FROM facts").df()
+    try:
+        df = con.execute("SELECT * FROM facts").df()
+    except Exception:
+        df = pd.DataFrame(columns=CANONICAL)
     con.close()
+    if df.empty:
+        return pd.DataFrame(columns=CANONICAL)
     return df
+
+
+def clear_facts() -> None:
+    if DB_PATH.exists():
+        DB_PATH.unlink()
+
+
+def load_settings() -> dict:
+    if not SETTINGS_PATH.exists():
+        return dict(DEFAULT_SETTINGS)
+    try:
+        data = json.loads(SETTINGS_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return dict(DEFAULT_SETTINGS)
+    out = dict(DEFAULT_SETTINGS)
+    out.update({k: data[k] for k in DEFAULT_SETTINGS if k in data})
+    return out
+
+
+def save_settings(settings: dict) -> None:
+    current = load_settings()
+    current.update(settings)
+    SETTINGS_PATH.write_text(json.dumps(current, indent=2), encoding="utf-8")
